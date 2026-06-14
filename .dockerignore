@@ -1,0 +1,12 @@
+.git
+.gitignore
+.github
+*.md
+README.md
+Makefile
+deploy/
+bin/
+.env
+.env.*
+*.log
+.DS_Store

@@ -1,0 +1,144 @@
+// Package server wires together routing, middleware, templates, and the
+// lifecycle of the HTTP server.
+package server
+
+import (
+	"context"
+	"errors"
+	"html/template"
+	"io/fs"
+	"net/http"
+	"time"
+
+	"github.com/rs/zerolog"
+
+	"github.com/rakepro/rakepro-web/internal/config"
+	"github.com/rakepro/rakepro-web/web"
+)
+
+// version is overridden at build time via -ldflags. See the Makefile.
+var version = "dev"
+
+// Server holds the dependencies shared across handlers.
+type Server struct {
+	cfg   config.Config
+	log   zerolog.Logger
+	tmpl  *template.Template
+	http  *http.Server
+	start time.Time
+}
+
+// New constructs a Server, parsing the embedded templates up front so a
+// malformed template fails fast at startup rather than on first request.
+func New(cfg config.Config, log zerolog.Logger) (*Server, error) {
+	tmpl, err := template.ParseFS(web.Templates, "templates/*.html")
+	if err != nil {
+		return nil, err
+	}
+
+	s := &Server{
+		cfg:   cfg,
+		log:   log,
+		tmpl:  tmpl,
+		start: time.Now(),
+	}
+
+	s.http = &http.Server{
+		Addr:         cfg.Addr,
+		Handler:      s.routes(),
+		ReadTimeout:  cfg.ReadTimeout,
+		WriteTimeout: cfg.WriteTimeout,
+		IdleTimeout:  cfg.IdleTimeout,
+		ErrorLog:     nil,
+	}
+
+	return s, nil
+}
+
+// routes builds the http.Handler with all routes and global middleware.
+func (s *Server) routes() http.Handler {
+	mux := http.NewServeMux()
+
+	// Static assets served straight from the embedded FS, rooted at /static/.
+	staticFS, _ := fs.Sub(web.Static, "static")
+	fileServer := http.FileServer(http.FS(staticFS))
+	mux.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
+
+	// Liveness and readiness probes for Docker healthchecks and k8s.
+	mux.HandleFunc("GET /healthz", s.handleHealth)
+	mux.HandleFunc("GET /readyz", s.handleHealth)
+
+	// Homepage. The trailing-slash root pattern also catches 404s, which we
+	// handle explicitly to avoid serving the homepage for unknown paths.
+	mux.HandleFunc("GET /", s.handleHome)
+
+	return requestLogger(s.log)(mux)
+}
+
+// handleHome renders the homepage template. Unknown paths under "/" yield 404.
+func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		s.handleNotFound(w, r)
+		return
+	}
+
+	data := map[string]any{
+		"Year":    time.Now().Year(),
+		"Version": version,
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := s.tmpl.ExecuteTemplate(w, "index.html", data); err != nil {
+		s.log.Error().Err(err).Msg("render homepage")
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (s *Server) handleNotFound(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	_, _ = w.Write([]byte("404 - not found"))
+}
+
+// handleHealth reports process liveness and uptime as JSON.
+func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	uptime := time.Since(s.start).Round(time.Second)
+	_, _ = w.Write([]byte(`{"status":"ok","version":"` + version + `","uptime":"` + uptime.String() + `"}`))
+}
+
+// Run starts the server and blocks until ctx is cancelled, then shuts down
+// gracefully within the configured ShutdownTimeout.
+func (s *Server) Run(ctx context.Context) error {
+	errCh := make(chan error, 1)
+
+	go func() {
+		s.log.Info().
+			Str("addr", s.cfg.Addr).
+			Str("env", s.cfg.Env).
+			Str("version", version).
+			Msg("server listening")
+		if err := s.http.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errCh <- err
+		}
+	}()
+
+	select {
+	case err := <-errCh:
+		return err
+	case <-ctx.Done():
+		s.log.Info().Msg("shutdown signal received")
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
+	defer cancel()
+
+	if err := s.http.Shutdown(shutdownCtx); err != nil {
+		s.log.Error().Err(err).Msg("graceful shutdown failed; forcing close")
+		return s.http.Close()
+	}
+
+	s.log.Info().Msg("server stopped cleanly")
+	return nil
+}

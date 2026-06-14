@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RAKEPRO - Engineered Infrastructure</title>
+  <meta name="description" content="RAKEPRO builds resilient infrastructure and platform engineering for teams that refuse to compromise.">
+  <meta name="theme-color" content="#0a1622">
+
+  <meta property="og:title" content="RAKEPRO">
+  <meta property="og:description" content="Engineered infrastructure for teams that refuse to compromise.">
+  <meta property="og:type" content="website">
+
+  <link rel="icon" type="image/svg+xml" href="/static/img/icon-circuit-r.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="grid-overlay" aria-hidden="true"></div>
+  <div class="scanline" aria-hidden="true"></div>
+
+  <header class="nav">
+    <a class="nav__brand" href="/" aria-label="RAKEPRO home">
+      <img src="/static/img/icon-circuit-r.svg" alt="" class="nav__mark" width="34" height="34">
+      <span class="nav__word">RAKE<span class="nav__word--accent">PRO</span></span>
+    </a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#platform">Platform</a>
+      <a href="#capabilities">Capabilities</a>
+      <a href="#status">Status</a>
+      <a href="#contact" class="nav__cta">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="platform">
+      <div class="hero__copy">
+        <p class="eyebrow">Infrastructure &middot; Platform Engineering</p>
+        <h1 class="hero__title">Infrastructure that<br><span class="hero__title--accent">holds the line.</span></h1>
+        <p class="hero__lede">
+          RAKEPRO designs, ships, and operates the systems your product runs on -
+          from bare metal to Kubernetes, observable end to end, built to stay up
+          when it matters most.
+        </p>
+        <div class="hero__actions">
+          <a href="#contact" class="btn btn--primary">Start a build</a>
+          <a href="#capabilities" class="btn btn--ghost">See capabilities</a>
+        </div>
+      </div>
+
+      <div class="hero__visual" aria-hidden="true">
+        <div class="halo">
+          <div class="halo__ring halo__ring--outer"></div>
+          <div class="halo__ring halo__ring--mid"></div>
+          <div class="halo__ring halo__ring--inner"></div>
+          <img src="/static/img/icon-circuit-r.svg" alt="" class="halo__core">
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="capabilities">
+      <article class="card">
+        <span class="card__pad"></span>
+        <h2 class="card__title">Cloud &amp; On-Prem</h2>
+        <p class="card__body">Kubernetes, Docker, and GitOps pipelines that deploy the same way on your cluster or a hyperscaler.</p>
+      </article>
+      <article class="card">
+        <span class="card__pad"></span>
+        <h2 class="card__title">Observability</h2>
+        <p class="card__body">Structured logs, metrics, and traces wired in from day one - so you see failures before your users do.</p>
+      </article>
+      <article class="card">
+        <span class="card__pad"></span>
+        <h2 class="card__title">Hardened by Default</h2>
+        <p class="card__body">Least-privilege, reproducible builds, and graceful degradation baked into every service we hand over.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer" id="contact">
+    <div class="footer__inner">
+      <img src="/static/img/wordmark-rakepro.svg" alt="RAKEPRO" class="footer__word" height="40">
+      <div class="footer__meta">
+        <a href="mailto:hello@rake.pro">hello@rake.pro</a>
+        <span class="footer__copy">&copy; {{.Year}} RAKEPRO. All rights reserved.</span>
+        <span class="footer__build" id="status">build {{.Version}}</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/js/main.js" defer></script>
+</body>
+</html>
