@@ -51,7 +51,8 @@ All settings come from the environment (see `.env.example`). Key ones:
   (no external registry secrets). Triggers: push to `main` (-> `latest` + `sha-`)
   and `v*` tags (-> semver). `VERSION` is injected into the binary via build-arg.
 - **Branches:** `master` is the dev/default branch (commit here). `prod` is the
-  release branch (protected via ruleset: PR + 1 approval + `build` check). CI
+  release branch (classic branch protection: PR required + `build` check, 0
+  approvals, no force-push/deletion). CI
   triggers: push to `prod` (-> `latest` + `sha-`), PR -> `prod` (build only, no
   push), and `v*` tags (-> semver).
 - **Release flow:** edit on `master` -> `go build` + run locally to verify ->
