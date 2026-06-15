@@ -50,19 +50,26 @@ All settings come from the environment (see `.env.example`). Key ones:
   **private GHCR** `ghcr.io/rake-pro/rakepro-web` via the built-in `GITHUB_TOKEN`
   (no external registry secrets). Triggers: push to `main` (-> `latest` + `sha-`)
   and `v*` tags (-> semver). `VERSION` is injected into the binary via build-arg.
-- **Release flow:** edit -> `go build` + run locally to verify -> commit -> tag
-  `vX.Y.Z` (builds `ghcr.io/rake-pro/rakepro-web:X.Y.Z`) -> bump the chart's
-  `tag`/`appVersion` in the GitOps repo (below).
+- **Branches:** `master` is the dev/default branch (commit here). `prod` is the
+  release branch (protected via ruleset: PR + 1 approval + `build` check). CI
+  triggers: push to `prod` (-> `latest` + `sha-`), PR -> `prod` (build only, no
+  push), and `v*` tags (-> semver).
+- **Release flow:** edit on `master` -> `go build` + run locally to verify ->
+  commit/push `master` -> open PR `master` -> `prod` -> merge. CI pushes
+  `:latest`; **ArgoCD Image Updater** (in the GitOps repo's cluster) auto-rolls
+  the new digest. No manual chart bump per release. (`vX.Y.Z` tags still publish
+  immutable `:X.Y.Z` images if you ever want to pin instead.)
 
 ## Deployment (lives in another repo)
 
 The Helm chart that actually deploys this is in the **`Rake-Pro/GitOps-ArgoCD`**
 repo at `cluster-apps/rakepro-web` - NOT here. It wraps the k8s-at-home `common`
 library chart, pins the GHCR image tag, and pulls the private image via an
-ExternalSecret (`ghcr-rakepro-web`, sourced from GSM key `ghcr-rakepro`). To ship
-a new image: bump `image.tag` in that chart's `values.yaml` and `version`/
-`appVersion` in its `Chart.yaml`, then sync in ArgoCD. The `deploy/k8s/` manifests
-here are a standalone reference only.
+ExternalSecret (`ghcr-rakepro-web`, sourced from GSM key `ghcr-rakepro`). The
+chart rides `:latest`; **ArgoCD Image Updater** (digest strategy) rolls each new
+`:latest` digest onto the live Application automatically - no per-release chart
+bump. See that repo's `docs/cluster-apps/rakepro-web.md` for the runbook. The
+`deploy/k8s/` manifests here are a standalone reference only.
 
 ## Branding assets
 
@@ -74,7 +81,8 @@ Sourced from the `branding` repo (`assets/png/`). Use the **clean** variants:
 ## Conventions
 
 - zerolog everywhere; no `fmt.Print`/`log` in request paths.
-- Pin image tags downstream; the build also publishes `latest` for convenience only.
+- `:latest` (from `prod`) is the deploy ref - ArgoCD Image Updater digest-pins it
+  downstream. `sha-<short>` + `vX.Y.Z` tags are also published for pinning/rollback.
 - amd64-only (the target cluster is amd64).
 - Frontend is progressive-enhancement: the page works fully without JS (JS only
   adds halo parallax and Discord click-to-copy).

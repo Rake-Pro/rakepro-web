@@ -4,6 +4,15 @@ Notable changes to this repo. Newest first. Outstanding work is in
 [backlog.md](backlog.md). Format loosely follows Keep a Changelog. Dates are
 YYYY-MM-DD. Versions match the git tag / GHCR image tag.
 
+## [Unreleased]
+
+### Changed
+- Release model -> `master`/`prod` branches. `master` is dev/default; merging a PR
+  `master` -> `prod` builds and pushes `:latest` (+ `sha-<short>`), which ArgoCD
+  Image Updater digest-pins onto the cluster. PRs targeting `prod` build without
+  pushing (validation). `prod` is protected by a ruleset (PR + 1 approval +
+  `build` check). `build-image.yml` triggers moved from `main` to `prod`.
+
 ## [0.1.2] - 2026-06-15
 
 ### Changed
