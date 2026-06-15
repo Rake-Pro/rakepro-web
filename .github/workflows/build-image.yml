@@ -1,9 +1,18 @@
 name: Build & Push Image
 
 on:
+  # Merges into prod are the release trigger: build + push (incl. :latest), which
+  # ArgoCD Image Updater (digest strategy) auto-rolls into the cluster.
   push:
-    branches: [main]
+    branches: [prod]
     tags: ["v*"]
+    paths-ignore:
+      - "**.md"
+      - "deploy/**"
+      - ".gitignore"
+  # PRs from master -> prod build WITHOUT pushing, to validate the image before merge.
+  pull_request:
+    branches: [prod]
     paths-ignore:
       - "**.md"
       - "deploy/**"
@@ -38,7 +47,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/prod' }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -55,7 +64,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           provenance: false
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
