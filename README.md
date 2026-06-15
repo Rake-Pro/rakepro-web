@@ -1,8 +1,9 @@
 # rakepro-web
 
-The marketing homepage for [rake.pro](https://rake.pro) - a small, self-contained
-Go web server. Static assets and HTML templates are embedded into the binary, so
-the whole site ships as a single artifact with no runtime file dependencies.
+The landing page for [rake.pro](https://rake.pro) - a small, self-contained Go
+web server serving a single branded page with social links. Static assets and
+HTML templates are embedded into the binary, so the whole site ships as a single
+artifact with no runtime file dependencies.
 
 ## Stack
 

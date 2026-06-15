@@ -1,38 +1,42 @@
-// Progressive enhancement only - the page is fully functional without JS.
+// Progressive enhancement only - the page works fully without JS.
 (function () {
   "use strict";
 
-  // Subtle parallax on the hero , tied to pointer position. Disabled when
-  // the user prefers reduced motion.
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var = document.querySelector(".");
 
+  // Subtle pointer parallax on the .
+  var = document.querySelector(".");
   if (&& !reduce) {
     window.addEventListener("pointermove", function (e) {
-      var dx = (e.clientX / window.innerWidth - 0.5) * 14;
-      var dy = (e.clientY / window.innerHeight - 0.5) * 14;
+      var dx = (e.clientX / window.innerWidth - 0.5) * 12;
+      var dy = (e.clientY / window.innerHeight - 0.5) * 12;
       .style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px)";
     }, { passive: true });
   }
 
-  // Reveal feature cards as they scroll into view.
-  var cards = document.querySelectorAll(".card");
-  if ("IntersectionObserver" in window && cards.length) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = "1";
-          entry.target.style.transform = "translateY(0)";
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.2 });
+  // Discord has no canonical profile URL - copy the handle to the clipboard.
+  var toast = document.getElementById("toast");
+  var toastTimer;
+  function showToast(msg) {
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 1800);
+  }
 
-    cards.forEach(function (card) {
-      card.style.opacity = "0";
-      card.style.transform = "translateY(18px)";
-      card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
-      io.observe(card);
+  var discord = document.getElementById("discord");
+  if (discord) {
+    discord.addEventListener("click", function () {
+      var handle = discord.getAttribute("data-handle");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(handle).then(
+          function () { showToast("Discord handle copied: " + handle); },
+          function () { showToast("Discord: " + handle); }
+        );
+      } else {
+        showToast("Discord: " + handle);
+      }
     });
   }
 })();
