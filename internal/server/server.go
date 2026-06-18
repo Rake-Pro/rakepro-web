@@ -21,11 +21,12 @@ var version = "dev"
 
 // Server holds the dependencies shared across handlers.
 type Server struct {
-	cfg   config.Config
-	log   zerolog.Logger
-	tmpl  *template.Template
-	http  *http.Server
-	start time.Time
+	cfg    config.Config
+	log    zerolog.Logger
+	tmpl   *template.Template
+	http   *http.Server
+	start  time.Time
+	stream *streamMonitor
 }
 
 // New constructs a Server, parsing the embedded templates up front so a
@@ -41,6 +42,11 @@ func New(cfg config.Config, log zerolog.Logger) (*Server, error) {
 		log:   log,
 		tmpl:  tmpl,
 		start: time.Now(),
+	}
+
+	// Only monitor the stream when a status endpoint is configured.
+	if cfg.StreamStatusURL != "" {
+		s.stream = newStreamMonitor(cfg.StreamStatusURL, cfg.StreamPollInterval, log)
 	}
 
 	s.http = &http.Server{
@@ -83,8 +89,10 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]any{
-		"Year":    time.Now().Year(),
-		"Version": version,
+		"Year":         time.Now().Year(),
+		"Version":      version,
+		"StreamURL":    s.cfg.StreamURL,
+		"StreamOnline": s.stream != nil && s.stream.Online(),
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -112,6 +120,10 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 // gracefully within the configured ShutdownTimeout.
 func (s *Server) Run(ctx context.Context) error {
 	errCh := make(chan error, 1)
+
+	if s.stream != nil {
+		go s.stream.run(ctx)
+	}
 
 	go func() {
 		s.log.Info().
