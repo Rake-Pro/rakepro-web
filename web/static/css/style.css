@@ -191,6 +191,39 @@ body {
 }
 .chip__label, .chip__sub { pointer-events: none; }
 
+/* Live stream chip: only rendered server-side when the stream is online. */
+.chip--live {
+  border-color: rgba(232, 72, 85, 0.55);
+  background: linear-gradient(180deg, rgba(54, 18, 24, 0.78), rgba(34, 10, 14, 0.78));
+}
+.chip--live .chip__icon { color: #ff5c6a; }
+.chip--live:hover {
+  border-color: rgba(232, 72, 85, 0.85);
+  box-shadow: 0 10px 30px rgba(24, 6, 9, 0.55), 0 0 18px rgba(232, 72, 85, 0.4);
+}
+.chip--live:hover .chip__icon { color: #ff7c87; }
+.chip--live .chip__sub { color: #e8a0a6; }
+
+.chip__pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: #ff5c6a;
+  vertical-align: middle;
+  box-shadow: 0 0 0 0 rgba(255, 92, 106, 0.7);
+  animation: live-pulse 1.6s ease-out infinite;
+}
+@keyframes live-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 92, 106, 0.7); }
+  70%  { box-shadow: 0 0 0 7px rgba(255, 92, 106, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 92, 106, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip__pulse { animation: none; }
+}
+
 /* --- Footer ------------------------------------------------------------- */
 .footer {
   position: relative;
