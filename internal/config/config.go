@@ -26,6 +26,15 @@ type Config struct {
 	IdleTimeout time.Duration
 	// ShutdownTimeout bounds graceful shutdown before connections are forced closed.
 	ShutdownTimeout time.Duration
+
+	// StreamURL is the public link shown when the stream is live (the rakecast
+	// front end). Empty disables the live stream chip entirely.
+	StreamURL string
+	// StreamStatusURL is the rakecast status endpoint polled to learn whether the
+	// stream is live. Empty disables polling (and the chip never shows).
+	StreamStatusURL string
+	// StreamPollInterval is how often the status endpoint is polled.
+	StreamPollInterval time.Duration
 }
 
 // Load reads configuration from the environment, applying sane defaults. It
@@ -39,6 +48,10 @@ func Load() (Config, error) {
 		WriteTimeout:    10 * time.Second,
 		IdleTimeout:     120 * time.Second,
 		ShutdownTimeout: 15 * time.Second,
+
+		StreamURL:          getEnv("RAKEPRO_STREAM_URL", "https://stream.rake.pro"),
+		StreamStatusURL:    getEnv("RAKEPRO_STREAM_STATUS_URL", "https://stream.rake.pro/api/status"),
+		StreamPollInterval: 30 * time.Second,
 	}
 
 	var err error
@@ -52,6 +65,9 @@ func Load() (Config, error) {
 		return c, err
 	}
 	if c.ShutdownTimeout, err = getEnvDuration("RAKEPRO_SHUTDOWN_TIMEOUT", c.ShutdownTimeout); err != nil {
+		return c, err
+	}
+	if c.StreamPollInterval, err = getEnvDuration("RAKEPRO_STREAM_POLL_INTERVAL", c.StreamPollInterval); err != nil {
 		return c, err
 	}
 
