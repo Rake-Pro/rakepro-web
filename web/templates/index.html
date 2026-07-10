@@ -5,74 +5,114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RAKEPRO</title>
   <meta name="description" content="RakePro - links and contact.">
-  <meta name="theme-color" content="#0a1622">
+  <meta name="theme-color" content="#020712">
 
   <meta property="og:title" content="RakePro">
   <meta property="og:description" content="Links and contact.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="/static/img/avatar-circuit-r.png">
 
-  <link rel="icon" type="image/png" href="/static/img/icon-circuit-r.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="https://cdn.rake.pro/assets/rakepro/vector/rakepro-circuit-r-primary.svg">
+  <link rel="preload" as="image" href="/static/img/rakepro-home-bg-selected-2_5-4k.webp" type="image/webp">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <div class="grid-overlay" aria-hidden="true"></div>
-  <div class="scanline" aria-hidden="true"></div>
+  <div class="frame" aria-hidden="true">
+    <span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span>
+  </div>
 
-  <main class="landing">
-    <div class="" aria-hidden="true">
-      <div class="__ring __ring--outer"></div>
-      <div class="__ring __ring--mid"></div>
-      <div class="__ring __ring--inner"></div>
-      <img src="/static/img/icon-circuit-r.png" alt="" class="__core">
-    </div>
+  <div class="deck">
+    <header class="rail">
+      <span class="rail-host">
+        <img class="rail-mark" src="https://cdn.rake.pro/assets/rakepro/vector/rakepro-circuit-r-primary.svg" alt="" aria-hidden="true">
+        rake.pro <span class="rail-sep">/</span> home
+      </span>
+      <span class="rail-spacer"></span>
+      <span class="rail-clock">
+        <span class="rail-sep">UTC</span>
+        <b id="clock" aria-live="off">--:--:--</b>
+      </span>
+    </header>
 
-    <img src="/static/img/wordmark.png" alt="RAKEPRO" class="wordmark">
+    <main class="stage" aria-labelledby="site-title">
+      <div class="hero">
+        <p class="eyebrow">Public Access Terminal</p>
+        <img
+          id="site-title"
+          class="brand-wordmark"
+          src="https://cdn.rake.pro/assets/rakepro/vector/rakepro-wordmark-primary.svg"
+          alt="RAKEPRO">
+      </div>
 
-    <nav class="socials" aria-label="Links">
-      {{if .StreamOnline}}
-      <a class="chip chip--live" href="{{.StreamURL}}" target="_blank" rel="noopener">
-        <svg class="chip__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-        <span class="chip__label">Live now <span class="chip__pulse" aria-hidden="true"></span></span>
-        <span class="chip__sub">Stream</span>
-      </a>
-      {{end}}
+      <nav class="command-bar" aria-label="RAKEPRO destinations">
+        <!-- StreamOnline adds .is-live, swapping the Twitch meta STREAM -> LIVE. -->
+        <a class="cmd{{if .StreamOnline}} is-live{{end}}" href="{{.StreamURL}}" target="_blank" rel="noopener">
+          <span class="cmd-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 3h16v11l-4 4h-4l-3 3H7v-3H4z"/>
+              <path d="M11 8v4M16 8v4"/>
+            </svg>
+          </span>
+          <span class="cmd-body">
+            <span class="cmd-title">Twitch</span>
+            <span class="cmd-meta cmd-meta-default">Stream</span>
+            <span class="cmd-meta cmd-meta-live">
+              <span class="live-dot" aria-hidden="true"></span>Live
+            </span>
+          </span>
+          <span class="cmd-ch" aria-hidden="true">01</span>
+        </a>
 
-      <a class="chip" href="https://twitch.tv/rakectl" target="_blank" rel="noopener">
-        <svg class="chip__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
-        <span class="chip__label">rakectl</span>
-        <span class="chip__sub">Twitch</span>
-      </a>
+        <a class="cmd" href="https://github.com/Rake-Pro" target="_blank" rel="noopener">
+          <span class="cmd-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.85 9.73.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.79.62-3.38-1.23-3.38-1.23-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.94.85.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.34 9.34 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/>
+            </svg>
+          </span>
+          <span class="cmd-body">
+            <span class="cmd-title">GitHub</span>
+            <span class="cmd-meta">Code</span>
+          </span>
+          <span class="cmd-ch" aria-hidden="true">02</span>
+        </a>
 
-      <a class="chip" href="https://github.com/rake-pro" target="_blank" rel="noopener">
-        <svg class="chip__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.014 2.898-.014 3.293 0 .322.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12z"/></svg>
-        <span class="chip__label">rake-pro</span>
-        <span class="chip__sub">GitHub</span>
-      </a>
+        <a class="cmd" href="https://discord.gg/rakepro" target="_blank" rel="noopener">
+          <span class="cmd-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.3 5.4A17 17 0 0 0 15.1 4l-.2.4a12.6 12.6 0 0 1 3.7 1.9 15.5 15.5 0 0 0-13.2 0A12.6 12.6 0 0 1 9.1 4.4L8.9 4a17 17 0 0 0-4.2 1.4C2 9.3 1.3 13.1 1.6 16.9a17 17 0 0 0 5.2 2.6l.6-1a11 11 0 0 1-1.8-.9l.4-.3a12 12 0 0 0 10.3 0l.4.3c-.6.4-1.2.7-1.8.9l.6 1a17 17 0 0 0 5.2-2.6c.4-4.4-.7-8.2-2.9-11.5ZM8.6 14.8c-1 0-1.9-.9-1.9-2.1 0-1.1.8-2.1 1.9-2.1s1.9 1 1.9 2.1c0 1.2-.8 2.1-1.9 2.1Zm6.8 0c-1 0-1.9-.9-1.9-2.1 0-1.1.8-2.1 1.9-2.1s1.9 1 1.9 2.1c0 1.2-.8 2.1-1.9 2.1Z"/>
+            </svg>
+          </span>
+          <span class="cmd-body">
+            <span class="cmd-title">Discord</span>
+            <span class="cmd-meta">Comms</span>
+          </span>
+          <span class="cmd-ch" aria-hidden="true">03</span>
+        </a>
 
-      <button class="chip" type="button" id="discord" data-handle="rake">
-        <svg class="chip__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
-        <span class="chip__label">rake</span>
-        <span class="chip__sub">Discord</span>
-      </button>
+        <a class="cmd" href="mailto:admin@rake.pro">
+          <span class="cmd-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="18" height="14" rx="2"/>
+              <path d="m3.5 7 8.5 6 8.5-6"/>
+            </svg>
+          </span>
+          <span class="cmd-body">
+            <span class="cmd-title">Email</span>
+            <span class="cmd-meta">Contact</span>
+          </span>
+          <span class="cmd-ch" aria-hidden="true">04</span>
+        </a>
+      </nav>
+    </main>
 
-      <a class="chip" href="mailto:admin@rake.pro">
-        <svg class="chip__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5z"/></svg>
-        <span class="chip__label">admin@rake.pro</span>
-        <span class="chip__sub">Email</span>
-      </a>
-    </nav>
-  </main>
-
-  <footer class="footer">
-    <span class="footer__copy">&copy; {{.Year}} RAKEPRO</span>
-    <span class="footer__build">build {{.Version}}</span>
-  </footer>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <footer class="site-status">
+      <span class="system-status">
+        <span class="status-dot" aria-hidden="true"></span>
+        System Online
+      </span>
+      <span>&copy; {{.Year}} RAKEPRO</span>
+    </footer>
+  </div>
 
   <script src="/static/js/main.js" defer></script>
 </body>
