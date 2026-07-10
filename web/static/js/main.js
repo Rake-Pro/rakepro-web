@@ -2,41 +2,15 @@
 (function () {
   "use strict";
 
-  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var el = document.getElementById("clock");
+  if (!el) return;
 
-  // Subtle pointer parallax on the halo.
-  var halo = document.querySelector(".halo");
-  if (halo && !reduce) {
-    window.addEventListener("pointermove", function (e) {
-      var dx = (e.clientX / window.innerWidth - 0.5) * 12;
-      var dy = (e.clientY / window.innerHeight - 0.5) * 12;
-      halo.style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px)";
-    }, { passive: true });
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function tick() {
+    var d = new Date();
+    el.textContent = pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds());
   }
 
-  // Discord has no canonical profile URL - copy the handle to the clipboard.
-  var toast = document.getElementById("toast");
-  var toastTimer;
-  function showToast(msg) {
-    if (!toast) return;
-    toast.textContent = msg;
-    toast.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 1800);
-  }
-
-  var discord = document.getElementById("discord");
-  if (discord) {
-    discord.addEventListener("click", function () {
-      var handle = discord.getAttribute("data-handle");
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(handle).then(
-          function () { showToast("Discord handle copied: " + handle); },
-          function () { showToast("Discord: " + handle); }
-        );
-      } else {
-        showToast("Discord: " + handle);
-      }
-    });
-  }
+  tick();
+  setInterval(tick, 1000);
 })();
