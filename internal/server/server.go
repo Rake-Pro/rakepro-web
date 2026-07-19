@@ -78,7 +78,23 @@ func (s *Server) routes() http.Handler {
 	// handle explicitly to avoid serving the homepage for unknown paths.
 	mux.HandleFunc("GET /", s.handleHome)
 
-	return requestLogger(s.log)(mux)
+	return requestLogger(s.log)(securityHeaders(mux))
+}
+
+// securityHeaders sets baseline security headers on every response. The CSP
+// allowlist mirrors the page's real asset origins: everything is same-origin
+// except the favicon/logo assets loaded from cdn.rake.pro; there are no inline
+// scripts or styles, no XHR, and the page is never framed.
+func securityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h := w.Header()
+		h.Set("Content-Security-Policy",
+			"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https://cdn.rake.pro; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+		h.Set("X-Frame-Options", "DENY")
+		h.Set("X-Content-Type-Options", "nosniff")
+		h.Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		next.ServeHTTP(w, r)
+	})
 }
 
 // handleHome renders the homepage template. Unknown paths under "/" yield 404.
