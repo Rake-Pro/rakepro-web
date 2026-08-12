@@ -17,7 +17,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
     -o /out/rakepro-web ./cmd/server
 
 # --- runtime stage -------------------------------------------------------
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM gcr.io/distroless/static-debian13:nonroot
 
 WORKDIR /
 
