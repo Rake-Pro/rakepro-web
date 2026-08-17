@@ -17,18 +17,17 @@ YYYY-MM-DD. Versions match the git tag / GHCR image tag.
 
 ### Changed
 - Swapped to the clean high-res branding assets: `icon-circuit-r` (icon) and
-  `wordmark` (wordmark), replacing the washed-out `the earlier icon` and the
-  grunge-speckled `the earlier wordmark`. Area-downscaled for the web so they
-  stay crisp at render size without being multi-MB.
+  `wordmark` (wordmark), replacing earlier brand-iteration assets. Area-downscaled
+  for the web so they stay crisp at render size without being multi-MB.
 
 ## [0.1.1] - 2026-06-15
 
 ### Changed
-- Simplified from a multi-section marketing homepage to a single-screen,
-  -themed link-in-bio landing: animated rings around the circuit-R
-  icon, the wordmark, and social chips - Twitch (`rakectl`), GitHub (`rake-pro`),
-  Discord (`rake`, click-to-copy since Discord has no public profile URL), and
-  email (`admin@rake.pro`). Removed the hero/capability-cards/CTAs.
+- Simplified from a multi-section marketing homepage to a single-screen
+  link-in-bio landing: animated rings around the circuit-R icon, the wordmark,
+  and social chips - Twitch (`rakectl`), GitHub (`rake-pro`), Discord (`rake`,
+  click-to-copy since Discord has no public profile URL), and email
+  (`admin@rake.pro`). Removed the hero/capability-cards/CTAs.
 
 ## [0.1.0] - 2026-06-14
 
