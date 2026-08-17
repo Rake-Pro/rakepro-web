@@ -11,7 +11,8 @@ artifact with no runtime file dependencies.
 - **[zerolog](https://github.com/rs/zerolog)** for structured logging (the only dependency)
 - Assets embedded via `embed.FS`
 - Container: multi-stage build to a distroless, non-root, static image
-- Deploy: plain Docker or Kubernetes (Kustomize manifests under `deploy/k8s`)
+- Deploy: plain Docker or Kubernetes (reference Kustomize manifests under
+  `deploy/k8s` - adapt to your own cluster/deploy tooling)
 
 ## Layout
 
