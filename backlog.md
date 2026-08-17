@@ -8,11 +8,10 @@ Priority key: P1 = should do soon, P2 = planned, P3 = nice-to-have.
 
 ## Deploy / ops
 
-- [ ] **First production rollout.** Image `0.1.2` is built and pinned in the
-  GitOps chart; bringing it live is gated on the GHCR pull secret. In the
-  `the GitOps repo` repo: confirm GSM `the registry pull secret` holds the full
-  `{"auths":{"ghcr.io":{...}}}` JSON, sync the `rakepro-web` Argo app, then point
-  the reverse proxy at the ingress. (P1)
+- [ ] **First production rollout.** Image `0.1.2` is built and pinned;
+  bringing it live is gated on the GHCR pull secret. Confirm the cluster's
+  image pull secret covers this image, deploy via the private GitOps repo,
+  then point the reverse proxy at the ingress. (P1)
 - [ ] **Stand up a test/staging site** so changes can be eyeballed off a real URL
   before production (none exists today; previews are ad-hoc). (P2)
 

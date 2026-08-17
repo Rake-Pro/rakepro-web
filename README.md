@@ -82,5 +82,11 @@ image tag in `deploy/k8s/kustomization.yaml` for your cluster.
 
 - The Go module path is `github.com/rakepro/rakepro-web`. If you host it
   elsewhere, update the path in `go.mod` and the imports.
-- Branding assets in `web/static/img` come from the rakepro brand kit
-  (circuit-R icon + chrome wordmark, Chakra Petch display type).
+- Branding assets in `web/static/img` are the circuit-R icon, avatar, and
+  wordmark PNGs. No webfonts - the type stack is system-ui/Inter (OS default).
+
+## License
+
+Code is licensed under the [MIT License](LICENSE). The Rake-Pro name, logo,
+and brand assets under `web/static/img/` are identity marks and are not
+covered by the MIT license or offered for reuse.
