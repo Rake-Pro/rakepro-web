@@ -10,10 +10,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// streamMonitor polls the rakecast status endpoint in the background and caches
-// whether the stream is currently live. The cached value is read on every page
-// render, so a render never blocks on (or is coupled to) rakecast availability.
-// It fails closed: any error polling the endpoint marks the stream offline.
+// streamMonitor polls the Owncast stream server's status endpoint in the
+// background and caches whether the stream is currently live. The cached
+// value is read on every page render, so a render never blocks on (or is
+// coupled to) stream server availability. It fails closed: any error polling
+// the endpoint marks the stream offline.
 type streamMonitor struct {
 	statusURL string
 	interval  time.Duration

@@ -9,8 +9,8 @@ YYYY-MM-DD. Versions match the git tag / GHCR image tag.
 ### Changed
 - CI: release flow renamed from `main -> prod` to `dev -> main`. `dev` is the default working branch, `main` the protected release branch; the bot PR is now "Merge dev to main". Mechanics unchanged. Pushes to `dev` now also publish `:dev` and `:dev-<sha>` images.
 - Release model -> `master`/`prod` branches. `master` is dev/default; merging a PR
-  `master` -> `prod` builds and pushes `:latest` (+ `sha-<short>`), which ArgoCD
-  Image Updater digest-pins onto the cluster. PRs targeting `prod` build without
+  `master` -> `prod` builds and pushes `:latest` (+ `sha-<short>`), which
+  deployment automation digest-pins into production. PRs targeting `prod` build without
   pushing (validation). `prod` is protected by a ruleset (PR + 1 approval +
   `build` check). `build-image.yml` triggers moved from `main` to `prod`.
 
@@ -26,7 +26,7 @@ YYYY-MM-DD. Versions match the git tag / GHCR image tag.
 ### Changed
 - Simplified from a multi-section marketing homepage to a single-screen
   link-in-bio landing: animated rings around the circuit-R icon, the wordmark,
-  and social chips - Twitch (`rakectl`), GitHub (`rake-pro`), Discord (`rake`,
+  and social chips: Twitch (`rakectl`), GitHub (`rake-pro`), Discord (`rake`,
   click-to-copy since Discord has no public profile URL), and email
   (`admin@rake.pro`). Removed the hero/capability-cards/CTAs.
 
@@ -40,5 +40,5 @@ YYYY-MM-DD. Versions match the git tag / GHCR image tag.
   shutdown on SIGINT/SIGTERM.
 - Multi-stage `Dockerfile` to `distroless/static:nonroot`; `Makefile` for
   run/build/test/docker/k8s; reference Kustomize manifests under `deploy/k8s/`.
-- `.github/workflows/build-image.yml` - amd64 image build to private GHCR
+- `.github/workflows/build-image.yml`: amd64 image build to private GHCR
   `ghcr.io/rake-pro/rakepro-web` on push to `main` and `v*` tags.

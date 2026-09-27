@@ -1,18 +1,18 @@
 # rakepro-web
 
-The landing page for [rake.pro](https://rake.pro) - a small, self-contained Go
+The landing page for [rake.pro](https://rake.pro): a small, self-contained Go
 web server serving a single branded page with social links. Static assets and
 HTML templates are embedded into the binary, so the whole site ships as a single
 artifact with no runtime file dependencies.
 
 ## Stack
 
-- **Go 1.23**, standard-library `net/http` with method-based routing (no web framework)
+- **Go 1.26**, standard-library `net/http` with method-based routing (no web framework)
 - **[zerolog](https://github.com/rs/zerolog)** for structured logging (the only dependency)
 - Assets embedded via `embed.FS`
 - Container: multi-stage build to a distroless, non-root, static image
 - Deploy: plain Docker or Kubernetes (reference Kustomize manifests under
-  `deploy/k8s` - adapt to your own cluster/deploy tooling)
+  `deploy/k8s`, adapt to your own cluster/deploy tooling)
 
 ## Layout
 
@@ -36,12 +36,6 @@ go run ./cmd/server
 
 Then open http://localhost:8080.
 
-First build only:
-
-```
-make tidy           # resolves go.sum (no network-pinned sums are committed yet)
-```
-
 ## Configuration
 
 All settings come from the environment (see `.env.example`):
@@ -55,13 +49,16 @@ All settings come from the environment (see `.env.example`):
 | `RAKEPRO_WRITE_TIMEOUT`    | `10s`          | Response write timeout                   |
 | `RAKEPRO_IDLE_TIMEOUT`     | `120s`         | Keep-alive idle timeout                  |
 | `RAKEPRO_SHUTDOWN_TIMEOUT` | `15s`          | Graceful shutdown budget                 |
+| `RAKEPRO_STREAM_URL`       | `https://stream.rake.pro` | Live-stream link shown by the chip; empty disables the chip |
+| `RAKEPRO_STREAM_STATUS_URL` | `https://stream.rake.pro/api/status` | Stream status endpoint polled to show the chip only while live; empty disables polling |
+| `RAKEPRO_STREAM_POLL_INTERVAL` | `30s`      | How often the status endpoint is polled  |
 
 ## Endpoints
 
-- `GET /` - homepage
-- `GET /static/*` - embedded CSS/JS/images
-- `GET /healthz` - liveness (JSON)
-- `GET /readyz` - readiness (JSON)
+- `GET /`: homepage
+- `GET /static/*`: embedded CSS/JS/images
+- `GET /healthz`: liveness (JSON)
+- `GET /readyz`: readiness (JSON)
 
 ## Docker
 
@@ -84,7 +81,7 @@ image tag in `deploy/k8s/kustomization.yaml` for your cluster.
 - The Go module path is `github.com/rakepro/rakepro-web`. If you host it
   elsewhere, update the path in `go.mod` and the imports.
 - Branding assets in `web/static/img` are the circuit-R icon, avatar, and
-  wordmark PNGs. No webfonts - the type stack is system-ui/Inter (OS default).
+  wordmark PNGs. No webfonts: the type stack is system-ui/Inter (OS default).
 
 ## License
 
