@@ -26,7 +26,7 @@ YYYY-MM-DD. Versions match the git tag / GHCR image tag.
 ### Changed
 - Simplified from a multi-section marketing homepage to a single-screen
   link-in-bio landing: animated rings around the circuit-R icon, the wordmark,
-  and social chips - Twitch (`rakectl`), GitHub (`rake-pro`), Discord (`rake`,
+  and social chips: Twitch (`rakectl`), GitHub (`rake-pro`), Discord (`rake`,
   click-to-copy since Discord has no public profile URL), and email
   (`admin@rake.pro`). Removed the hero/capability-cards/CTAs.
 
@@ -40,5 +40,5 @@ YYYY-MM-DD. Versions match the git tag / GHCR image tag.
   shutdown on SIGINT/SIGTERM.
 - Multi-stage `Dockerfile` to `distroless/static:nonroot`; `Makefile` for
   run/build/test/docker/k8s; reference Kustomize manifests under `deploy/k8s/`.
-- `.github/workflows/build-image.yml` - amd64 image build to private GHCR
+- `.github/workflows/build-image.yml`: amd64 image build to private GHCR
   `ghcr.io/rake-pro/rakepro-web` on push to `main` and `v*` tags.

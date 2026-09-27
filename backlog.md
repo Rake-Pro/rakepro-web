@@ -1,8 +1,7 @@
 # Backlog
 
 Outstanding / future work for this repo. Started tracking 2026-06-15.
-Conventions: see [CLAUDE.md](CLAUDE.md). Shipped items move to
-[changelog.md](changelog.md).
+Shipped items move to [changelog.md](changelog.md).
 
 Priority key: P1 = should do soon, P2 = planned, P3 = nice-to-have.
 
@@ -21,7 +20,7 @@ Priority key: P1 = should do soon, P2 = planned, P3 = nice-to-have.
   no canonical profile URL). If/when there is a server, swap to a real invite
   link. (P3)
 - [ ] Add `apple-touch-icon` + a small `favicon.ico` fallback for older clients. (P3)
-- [ ] Decide the long-term direction for rake.pro - this landing is a placeholder. (P2)
+- [ ] Decide the long-term direction for rake.pro: this landing is a placeholder. (P2)
 
 ## Engineering
 
@@ -30,4 +29,4 @@ Priority key: P1 = should do soon, P2 = planned, P3 = nice-to-have.
 - [ ] Resolve the module-path vs repo-name mismatch (`github.com/rakepro/...` vs
   `Rake-Pro/rakepro-web`) if the repo is ever consumed via `go get`. (P3)
 - [ ] Renovate/dep updates for the single `zerolog` dependency and the Go base
-  image (optional - surface area is tiny). (P3)
+  image (optional, surface area is tiny). (P3)
