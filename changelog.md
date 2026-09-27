@@ -9,8 +9,8 @@ YYYY-MM-DD. Versions match the git tag / GHCR image tag.
 ### Changed
 - CI: release flow renamed from `main -> prod` to `dev -> main`. `dev` is the default working branch, `main` the protected release branch; the bot PR is now "Merge dev to main". Mechanics unchanged. Pushes to `dev` now also publish `:dev` and `:dev-<sha>` images.
 - Release model -> `master`/`prod` branches. `master` is dev/default; merging a PR
-  `master` -> `prod` builds and pushes `:latest` (+ `sha-<short>`), which ArgoCD
-  Image Updater digest-pins onto the cluster. PRs targeting `prod` build without
+  `master` -> `prod` builds and pushes `:latest` (+ `sha-<short>`), which
+  deployment automation digest-pins into production. PRs targeting `prod` build without
   pushing (validation). `prod` is protected by a ruleset (PR + 1 approval +
   `build` check). `build-image.yml` triggers moved from `main` to `prod`.
 

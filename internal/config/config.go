@@ -27,10 +27,10 @@ type Config struct {
 	// ShutdownTimeout bounds graceful shutdown before connections are forced closed.
 	ShutdownTimeout time.Duration
 
-	// StreamURL is the public link shown when the stream is live (the rakecast
-	// front end). Empty disables the live stream chip entirely.
+	// StreamURL is the public link shown when the stream is live (the stream
+	// server front end). Empty disables the live stream chip entirely.
 	StreamURL string
-	// StreamStatusURL is the rakecast status endpoint polled to learn whether the
+	// StreamStatusURL is the stream server status endpoint polled to learn whether the
 	// stream is live. Empty disables polling (and the chip never shows).
 	StreamStatusURL string
 	// StreamPollInterval is how often the status endpoint is polled.
