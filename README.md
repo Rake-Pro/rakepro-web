@@ -7,7 +7,7 @@ artifact with no runtime file dependencies.
 
 ## Stack
 
-- **Go 1.26**, standard-library `net/http` with method-based routing (no web framework)
+- **Go 1.27**, standard-library `net/http` with method-based routing (no web framework)
 - **[zerolog](https://github.com/rs/zerolog)** for structured logging (the only dependency)
 - Assets embedded via `embed.FS`
 - Container: multi-stage build to a distroless, non-root, static image
