@@ -22,7 +22,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: rakepro-web
-          image: rakepro/rakepro-web:latest
+          image: ghcr.io/OWNER/rakepro-web:latest # placeholder: set the image in kustomization.yaml
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

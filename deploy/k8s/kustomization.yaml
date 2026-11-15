@@ -6,7 +6,9 @@ resources:
   - service.yaml
   - ingress.yaml
 
-# Pin the image tag here per environment, e.g.:
+# The image in deployment.yaml is a placeholder; set the real one here per
+# environment, e.g.:
 #   images:
-#     - name: rakepro/rakepro-web
-#       newTag: v0.1.0
+#     - name: ghcr.io/OWNER/rakepro-web
+#       newName: ghcr.io/<your-namespace>/rakepro-web
+#       newTag: 0.1.0

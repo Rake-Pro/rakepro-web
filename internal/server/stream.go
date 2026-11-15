@@ -3,11 +3,22 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
+	"strings"
 	"sync/atomic"
 	"time"
 
 	"github.com/rs/zerolog"
+)
+
+const (
+	// maxStatusBody caps how much of the status response is decoded; the real
+	// payload is a few hundred bytes.
+	maxStatusBody = 64 << 10
+	// maxStatusRedirects caps same-host redirects of the status request.
+	maxStatusRedirects = 3
 )
 
 // streamMonitor polls the Owncast stream server's status endpoint in the
@@ -28,9 +39,21 @@ func newStreamMonitor(statusURL string, interval time.Duration, log zerolog.Logg
 		statusURL: statusURL,
 		interval:  interval,
 		// Short timeout: the upstream check must never stall the poll loop.
-		client: &http.Client{Timeout: 4 * time.Second},
+		client: &http.Client{Timeout: 4 * time.Second, CheckRedirect: sameHostRedirect},
 		log:    log.With().Str("component", "stream-monitor").Logger(),
 	}
+}
+
+// sameHostRedirect follows a redirect only when it stays on the host of the
+// original status URL (a scheme or port change on that host is allowed).
+func sameHostRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) > maxStatusRedirects {
+		return errors.New("too many redirects")
+	}
+	if !strings.EqualFold(req.URL.Hostname(), via[0].URL.Hostname()) {
+		return errors.New("redirect to another host refused")
+	}
+	return nil
 }
 
 // Online reports the last-known live status of the stream.
@@ -78,7 +101,7 @@ func (m *streamMonitor) poll(ctx context.Context) {
 	var body struct {
 		Online bool `json:"online"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, maxStatusBody)).Decode(&body); err != nil {
 		m.set(false, err)
 		return
 	}
