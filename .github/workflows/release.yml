@@ -4,6 +4,8 @@ on:
   # Normal path: a promotion PR merges into main; this run mints the next
   # semver tag and builds from it, all in one workflow (a tag pushed with
   # GITHUB_TOKEN cannot trigger another workflow, so nothing is chained).
+  # A pushed tag releases only if it is vX.Y.Z on a commit reachable from main;
+  # a manual run releases only on main.
   push:
     branches: [main]
     tags: ["v*"]
@@ -22,7 +24,7 @@ env:
 
 jobs:
   version:
-    if: github.ref_type == 'branch'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write # pushes the release tag
@@ -33,7 +35,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -42,13 +44,15 @@ jobs:
         id: next
         run: |
           set -euo pipefail
-          if [ -n "$(git tag --points-at HEAD -l 'v*')" ]; then
+          # Only plain vX.Y.Z tags count; any other v* tag is ignored.
+          semver='^v[0-9]+\.[0-9]+\.[0-9]+$'
+          if [ -n "$(git tag --points-at HEAD -l 'v*' | { grep -E "${semver}" || true; })" ]; then
             echo "HEAD already tagged; skipping release."
             echo "tag=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          latest=$(git tag -l 'v*' --sort=-v:refname | head -1)
+          latest=$(git tag -l 'v*' --sort=-v:refname | { grep -E "${semver}" || true; } | head -1)
           if [ -z "${latest}" ]; then
             next="v1.0.0"
           else
@@ -75,33 +79,59 @@ jobs:
 
   build:
     needs: [version]
-    # Runs for a freshly minted tag (main merge) or a manually pushed v* tag.
-    if: always() && (needs.version.outputs.tag != '' || github.ref_type == 'tag')
+    # Runs for a freshly minted tag (main push or manual run on main) or a
+    # pushed v* tag. A manual run on any other ref publishes nothing.
+    if: >-
+      always() &&
+      ((github.ref == 'refs/heads/main' && needs.version.outputs.tag != '') ||
+      (github.event_name == 'push' && github.ref_type == 'tag'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     outputs:
       version: ${{ steps.meta.outputs.version }}
+      tags: ${{ steps.meta.outputs.tags }}
+      image: ${{ steps.rel.outputs.image }}
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Resolve release tag
         id: rel
+        env:
+          MINTED_TAG: ${{ needs.version.outputs.tag }}
         run: |
+          set -euo pipefail
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            tag="${GITHUB_REF_NAME}"
           else
-            echo "tag=${{ needs.version.outputs.tag }}" >> "$GITHUB_OUTPUT"
+            tag="${MINTED_TAG}"
           fi
+          if ! [[ "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::release tag is not of the form vX.Y.Z"
+            exit 1
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "image=${REGISTRY}/${IMAGE,,}" >> "$GITHUB_OUTPUT"
 
+      # Full history so the next step can see main.
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: refs/tags/${{ steps.rel.outputs.tag }}
           persist-credentials: false
+          fetch-depth: 0
+
+      - name: Check release commit is on main
+        run: |
+          set -euo pipefail
+          if ! git merge-base --is-ancestor HEAD refs/remotes/origin/main; then
+            echo "::error::release tag commit is not reachable from main"
+            exit 1
+          fi
 
       - name: Docker metadata
         id: meta
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE }}
           tags: |
@@ -111,25 +141,26 @@ jobs:
             type=raw,value=latest
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Log in to GHCR
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Pushed by digest only. The publish job sets the tags after the scan passes.
       - name: Build and push (amd64)
-        uses: docker/build-push-action@v7
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           platforms: linux/amd64
-          push: true
+          outputs: type=image,name=${{ steps.rel.outputs.image }},push-by-digest=true,name-canonical=true,push=true
           provenance: false
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
-          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -143,7 +174,7 @@ jobs:
       packages: read
     steps:
       - name: Log in to GHCR
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -152,7 +183,43 @@ jobs:
       - name: Run Trivy scan
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ghcr.io/rake-pro/rakepro-web:${{ needs.build.outputs.version }}
+          image-ref: ${{ needs.build.outputs.image }}@${{ needs.build.outputs.digest }}
           exit-code: '1'
           severity: CRITICAL
           ignore-unfixed: true
+
+  # Moves the version tags and latest to the scanned digest. A failed scan
+  # skips this job, so latest keeps pointing at the previous release.
+  publish:
+    name: Publish tags
+    needs: [build, trivy-scan]
+    if: always() && needs.build.result == 'success' && needs.trivy-scan.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # --prefer-index=false copies the single image manifest as is, so every tag
+      # resolves to the digest that was scanned.
+      - name: Tag the scanned digest
+        env:
+          SOURCE: ${{ needs.build.outputs.image }}@${{ needs.build.outputs.digest }}
+          TAGS: ${{ needs.build.outputs.tags }}
+        run: |
+          set -euo pipefail
+          args=()
+          while IFS= read -r t; do
+            if [ -n "${t}" ]; then
+              args+=(--tag "${t}")
+            fi
+          done <<< "${TAGS}"
+          docker buildx imagetools create --prefer-index=false "${args[@]}" "${SOURCE}"
