@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -67,8 +68,15 @@ func (s *Server) routes() http.Handler {
 
 	// Static assets served straight from the embedded FS, rooted at /static/.
 	staticFS, _ := fs.Sub(web.Static, "static")
-	fileServer := http.FileServer(http.FS(staticFS))
-	mux.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
+	fileServer := http.StripPrefix("/static/", http.FileServer(http.FS(staticFS)))
+	// Directory paths get a 404 instead of a generated file listing.
+	mux.HandleFunc("GET /static/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/") {
+			s.handleNotFound(w, r)
+			return
+		}
+		fileServer.ServeHTTP(w, r)
+	})
 
 	// Liveness and readiness probes for Docker healthchecks and k8s.
 	mux.HandleFunc("GET /healthz", s.handleHealth)

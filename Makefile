@@ -2,7 +2,7 @@
 APP        := rakepro-web
 PKG        := ./cmd/server
 BIN        := bin/$(APP)
-IMAGE      ?= rakepro/$(APP)
+IMAGE      ?= $(APP)
 VERSION    ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS    := -s -w -X github.com/rakepro/rakepro-web/internal/server.version=$(VERSION)
 
