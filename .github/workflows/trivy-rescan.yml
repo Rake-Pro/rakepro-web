@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           ref: refs/heads/main
@@ -32,21 +32,39 @@ jobs:
         id: tag
         run: |
           set -euo pipefail
-          latest=$(git tag -l 'v*' --sort=-v:refname | head -1)
-          [ -n "$latest" ] || { echo "no v* tag; nothing to scan" >&2; exit 1; }
+          latest=$(git tag -l 'v*' --sort=-v:refname | { grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true; } | head -1)
+          [ -n "$latest" ] || { echo "no vX.Y.Z tag; nothing to scan" >&2; exit 1; }
           echo "version=${latest#v}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Production follows :latest, so scan the digest behind it rather than
+      # the highest vX.Y.Z tag (they differ if a release scan failed or latest
+      # was moved by another path).
+      - name: Resolve digest behind latest
+        id: digest
+        env:
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          set -euo pipefail
+          ref=ghcr.io/rake-pro/rakepro-web
+          latest=$(docker buildx imagetools inspect "${ref}:latest" --format '{{json .Manifest}}' | jq -r .digest)
+          tagged=$(docker buildx imagetools inspect "${ref}:${VERSION}" --format '{{json .Manifest}}' 2>/dev/null | jq -r .digest) || tagged="missing"
+          [[ "${latest}" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "cannot resolve ${ref}:latest" >&2; exit 1; }
+          if [ "${latest}" != "${tagged}" ]; then
+            echo "::warning::${ref}:latest (${latest}) is not ${ref}:${VERSION} (${tagged}); scanning latest"
+          fi
+          echo "digest=${latest}" >> "$GITHUB_OUTPUT"
+
       - name: Trivy scan (released image)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ghcr.io/rake-pro/rakepro-web:${{ steps.tag.outputs.version }}
+          image-ref: ghcr.io/rake-pro/rakepro-web@${{ steps.digest.outputs.digest }}
           exit-code: '1'
           severity: CRITICAL,HIGH
           ignore-unfixed: true

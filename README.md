@@ -63,7 +63,7 @@ All settings come from the environment (see `.env.example`):
 ## Docker
 
 ```
-make docker-build           # rakepro/rakepro-web:<version>
+make docker-build           # rakepro-web:<version> (set IMAGE= for a registry name)
 make docker-run             # -> http://localhost:8080
 ```
 
@@ -73,8 +73,9 @@ make docker-run             # -> http://localhost:8080
 make k8s-deploy             # kubectl apply -k deploy/k8s
 ```
 
-Edit `deploy/k8s/ingress.yaml` (host, ingressClassName, TLS issuer) and pin the
-image tag in `deploy/k8s/kustomization.yaml` for your cluster.
+Edit `deploy/k8s/ingress.yaml` (host, ingressClassName, TLS issuer) and set the
+image name and tag in `deploy/k8s/kustomization.yaml` for your cluster; the
+image in `deploy/k8s/deployment.yaml` is a placeholder.
 
 ## Notes
 
