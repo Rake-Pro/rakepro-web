@@ -104,3 +104,15 @@ func TestStreamMonitorRedirectLimit(t *testing.T) {
 		t.Fatalf("hits=%d online=%t, want hits=%d online=false", hits, m.Online(), want)
 	}
 }
+
+func TestSameHostRedirectRefusesHTTPSDowngrade(t *testing.T) {
+	via := []*http.Request{httptest.NewRequest(http.MethodGet, "https://status.example.com/api", nil)}
+	down := httptest.NewRequest(http.MethodGet, "http://status.example.com/api", nil)
+	if sameHostRedirect(down, via) == nil {
+		t.Fatal("https to http downgrade was allowed")
+	}
+	up := httptest.NewRequest(http.MethodGet, "https://status.example.com:8443/api", nil)
+	if err := sameHostRedirect(up, via); err != nil {
+		t.Fatalf("https same-host redirect refused: %v", err)
+	}
+}
