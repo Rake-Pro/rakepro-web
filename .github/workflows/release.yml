@@ -4,7 +4,7 @@ on:
   # Normal path: a promotion PR merges into main; this run mints the next
   # semver tag and builds from it, all in one workflow (a tag pushed with
   # GITHUB_TOKEN cannot trigger another workflow, so nothing is chained).
-  # A pushed tag releases only if it is vX.Y.Z on a commit reachable from main;
+  # A pushed tag releases only if it is vX.Y.Z on the current head of main;
   # a manual run releases only on main.
   push:
     branches: [main]
@@ -126,6 +126,15 @@ jobs:
           set -euo pipefail
           if ! git merge-base --is-ancestor HEAD refs/remotes/origin/main; then
             echo "::error::release tag commit is not reachable from main"
+            exit 1
+          fi
+          # A pushed tag must sit on the current head of main, so an older
+          # commit cannot be re-released under a new version and moved to
+          # latest. The minted-tag path keeps the ancestor check only: main
+          # may move on while that run waits.
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && \
+             [ "$(git rev-parse 'HEAD^{commit}')" != "$(git rev-parse 'refs/remotes/origin/main^{commit}')" ]; then
+            echo "::error::release tag commit is not the head of main"
             exit 1
           fi
 
