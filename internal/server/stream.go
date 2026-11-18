@@ -45,13 +45,17 @@ func newStreamMonitor(statusURL string, interval time.Duration, log zerolog.Logg
 }
 
 // sameHostRedirect follows a redirect only when it stays on the host of the
-// original status URL (a scheme or port change on that host is allowed).
+// original status URL (a port change on that host is allowed, but never a
+// downgrade from https).
 func sameHostRedirect(req *http.Request, via []*http.Request) error {
 	if len(via) > maxStatusRedirects {
 		return errors.New("too many redirects")
 	}
 	if !strings.EqualFold(req.URL.Hostname(), via[0].URL.Hostname()) {
 		return errors.New("redirect to another host refused")
+	}
+	if via[0].URL.Scheme == "https" && req.URL.Scheme != "https" {
+		return errors.New("redirect downgrading https refused")
 	}
 	return nil
 }

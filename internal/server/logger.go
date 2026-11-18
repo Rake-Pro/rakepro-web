@@ -67,17 +67,29 @@ func requestLogger(log zerolog.Logger) func(http.Handler) http.Handler {
 				Int("bytes", rec.bytes).
 				Dur("latency", time.Since(start)).
 				Str("remote", clientIP(r)).
-				Str("user_agent", r.UserAgent()).
+				Str("user_agent", truncate(r.UserAgent(), maxLoggedHeader)).
 				Msg("request")
 		})
 	}
 }
 
-// clientIP returns the best-effort client address, honoring a single hop of
-// X-Forwarded-For set by a trusted ingress/load balancer.
+// clientIP returns the X-Forwarded-For chain as received (cut to
+// maxLoggedHeader), else the peer address. Behind several proxies the
+// right-most entry is the nearest proxy, not the client; which entries can be
+// trusted depends on how each proxy in front writes the header.
 func clientIP(r *http.Request) string {
 	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		return xff
+		return truncate(xff, maxLoggedHeader)
 	}
 	return r.RemoteAddr
+}
+
+// maxLoggedHeader caps client-controlled header values copied into log lines.
+const maxLoggedHeader = 256
+
+func truncate(s string, n int) string {
+	if len(s) > n {
+		return s[:n]
+	}
+	return s
 }

@@ -56,7 +56,9 @@ func New(cfg config.Config, log zerolog.Logger) (*Server, error) {
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
 		IdleTimeout:  cfg.IdleTimeout,
-		ErrorLog:     nil,
+		// The page and probes need only small headers; Go's default is 1 MiB.
+		MaxHeaderBytes: 16 << 10,
+		ErrorLog:       nil,
 	}
 
 	return s, nil
@@ -127,8 +129,8 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleNotFound(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotFound)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusNotFound)
 	_, _ = w.Write([]byte("404 - not found"))
 }
 
